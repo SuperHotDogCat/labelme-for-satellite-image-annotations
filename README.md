@@ -26,6 +26,15 @@
 <div align="center">
   <img src="examples/instance_segmentation/.readme/annotation.jpg" width="70%">
 </div>
+## Set up for developers
+```
+# before execute the below command. let's create virtual env
+pip install -e . # set up and install dependencies
+python labelme/__main__.py
+
+# after annotation
+labelme_json_to_dataset /path/to/json_file
+```
 
 ## Description
 
