@@ -75,6 +75,7 @@ class FileDialogPreview(QtWidgets.QFileDialog):
                 self.labelPreview.label.setAlignment(QtCore.Qt.AlignCenter)
                 self.labelPreview.setHidden(False)
 
+
 class ChannelSelectionDialog(QtWidgets.QDialog):
     def __init__(self, filename, parent=None):
         super(ChannelSelectionDialog, self).__init__(parent)
@@ -90,7 +91,7 @@ class ChannelSelectionDialog(QtWidgets.QDialog):
 
     def initUI(self):
         self.setWindowTitle("Select RGB Channels")
-        
+
         layout = QtWidgets.QFormLayout()
 
         # Create combo boxes for R, G, B channel selection

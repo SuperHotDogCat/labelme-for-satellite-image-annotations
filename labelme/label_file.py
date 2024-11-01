@@ -71,14 +71,16 @@ class LabelFile(object):
             image_pil.save(f, format=format)
             f.seek(0)
             return f.read()
-    
+
     @staticmethod
     def load_satellite_image_file(filename, r_channel, g_channel, b_channel):
         with tifffile.TiffFile(filename) as tif:
             image_array = tif.asarray()
-        rgb_array = np.clip((image_array / image_array.max()) * 255, 0, 255).astype('uint8')
+        rgb_array = np.clip((image_array / image_array.max()) * 255, 0, 255).astype(
+            "uint8"
+        )
         if rgb_array.ndim == 3:
-            rgb_array = rgb_array[:,:,[r_channel, g_channel, b_channel]]
+            rgb_array = rgb_array[:, :, [r_channel, g_channel, b_channel]]
         image_pil = PIL.Image.fromarray(rgb_array)
         # apply orientation to image according to exif
         image_pil = utils.apply_exif_orientation(image_pil)
@@ -145,9 +147,11 @@ class LabelFile(object):
                     flags=s.get("flags", {}),
                     description=s.get("description"),
                     group_id=s.get("group_id"),
-                    mask=utils.img_b64_to_arr(s["mask"]).astype(bool)
-                    if s.get("mask")
-                    else None,
+                    mask=(
+                        utils.img_b64_to_arr(s["mask"]).astype(bool)
+                        if s.get("mask")
+                        else None
+                    ),
                     other_data={k: v for k, v in s.items() if k not in shape_keys},
                 )
                 for s in data["shapes"]

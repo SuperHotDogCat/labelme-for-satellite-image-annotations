@@ -24,7 +24,9 @@ def main():
         "--labels", help="Labels file or comma separated text", required=True
     )
     parser.add_argument(
-        "--noobject", help="Flag not to generate object label", action="store_true"
+        "--noobject",
+        help="Flag not to generate object label",
+        action="store_true",
     )
     parser.add_argument(
         "--nonpy", help="Flag not to generate .npy files", action="store_true"

@@ -62,6 +62,10 @@ class BrightnessContrastDialog(QtWidgets.QDialog):
             img = PIL.ImageEnhance.Contrast(img).enhance(contrast)
 
         qimage = QImage(
-            img.tobytes(), img.width, img.height, img.width * 3, QImage.Format_RGB888
+            img.tobytes(),
+            img.width,
+            img.height,
+            img.width * 3,
+            QImage.Format_RGB888,
         )
         self.callback(qimage)

@@ -376,11 +376,13 @@ class MainWindow(QtWidgets.QMainWindow):
             enabled=False,
         )
         createAiPolygonMode.changed.connect(
-            lambda: self.canvas.initializeAiModel(
-                name=self._selectAiModelComboBox.currentText()
+            lambda: (
+                self.canvas.initializeAiModel(
+                    name=self._selectAiModelComboBox.currentText()
+                )
+                if self.canvas.createMode == "ai_polygon"
+                else None
             )
-            if self.canvas.createMode == "ai_polygon"
-            else None
         )
         createAiMaskMode = action(
             self.tr("Create AI-Mask"),
@@ -391,11 +393,13 @@ class MainWindow(QtWidgets.QMainWindow):
             enabled=False,
         )
         createAiMaskMode.changed.connect(
-            lambda: self.canvas.initializeAiModel(
-                name=self._selectAiModelComboBox.currentText()
+            lambda: (
+                self.canvas.initializeAiModel(
+                    name=self._selectAiModelComboBox.currentText()
+                )
+                if self.canvas.createMode == "ai_mask"
+                else None
             )
-            if self.canvas.createMode == "ai_mask"
-            else None
         )
         editMode = action(
             self.tr("Edit Polygons"),
@@ -805,11 +809,13 @@ class MainWindow(QtWidgets.QMainWindow):
             model_index = 0
         self._selectAiModelComboBox.setCurrentIndex(model_index)
         self._selectAiModelComboBox.currentIndexChanged.connect(
-            lambda: self.canvas.initializeAiModel(
-                name=self._selectAiModelComboBox.currentText()
+            lambda: (
+                self.canvas.initializeAiModel(
+                    name=self._selectAiModelComboBox.currentText()
+                )
+                if self.canvas.createMode in ["ai_polygon", "ai_mask"]
+                else None
             )
-            if self.canvas.createMode in ["ai_polygon", "ai_mask"]
-            else None
         )
 
         self._ai_prompt_widget: QtWidgets.QWidget = AiPromptWidget(
@@ -1248,7 +1254,8 @@ class MainWindow(QtWidgets.QMainWindow):
             if shape.group_id is None:
                 item.setText(
                     '{} <font color="#{:02x}{:02x}{:02x}">●</font>'.format(
-                        html.escape(shape.label), *shape.fill_color.getRgb()[:3]
+                        html.escape(shape.label),
+                        *shape.fill_color.getRgb()[:3],
                     )
                 )
             else:
@@ -1427,9 +1434,11 @@ class MainWindow(QtWidgets.QMainWindow):
                     description=s.description,
                     shape_type=s.shape_type,
                     flags=s.flags,
-                    mask=None
-                    if s.mask is None
-                    else utils.img_arr_to_b64(s.mask.astype(np.uint8)),
+                    mask=(
+                        None
+                        if s.mask is None
+                        else utils.img_arr_to_b64(s.mask.astype(np.uint8))
+                    ),
                 )
             )
             return data
@@ -1690,7 +1699,9 @@ class MainWindow(QtWidgets.QMainWindow):
                 dialog = ChannelSelectionDialog(filename)
                 if dialog.exec_() == QtWidgets.QDialog.Accepted:
                     r_channel, g_channel, b_channel = dialog.get_selected_channels()
-                    self.imageData = LabelFile.load_satellite_image_file(filename, r_channel, g_channel, b_channel)
+                    self.imageData = LabelFile.load_satellite_image_file(
+                        filename, r_channel, g_channel, b_channel
+                    )
             else:
                 self.imageData = LabelFile.load_image_file(filename)
             if self.imageData:
@@ -1912,9 +1923,9 @@ class MainWindow(QtWidgets.QMainWindow):
             "*.{}".format(fmt.data().decode())
             for fmt in QtGui.QImageReader.supportedImageFormats()
         ]
-        filters = self.tr("Image & Label files (%s);;Satellite Images (*.tif *.tiff)") % " ".join(
-            formats + ["*%s" % LabelFile.suffix]
-        )
+        filters = self.tr(
+            "Image & Label files (%s);;Satellite Images (*.tif *.tiff)"
+        ) % " ".join(formats + ["*%s" % LabelFile.suffix])
         fileDialog = FileDialogPreview(self)
         fileDialog.setFileMode(FileDialogPreview.ExistingFile)
         fileDialog.setNameFilter(filters)
@@ -1925,9 +1936,13 @@ class MainWindow(QtWidgets.QMainWindow):
         fileDialog.setViewMode(FileDialogPreview.Detail)
         if fileDialog.exec_():
             fileName = fileDialog.selectedFiles()[0]
-            selected_filter = fileDialog.selectedNameFilter()  # 選択されたフィルタを取得
+            selected_filter = (
+                fileDialog.selectedNameFilter()
+            )  # 選択されたフィルタを取得
             if fileName:
-                selected_filter = fileDialog.selectedNameFilter()  # 選択されたフィルタを取得
+                selected_filter = (
+                    fileDialog.selectedNameFilter()
+                )  # 選択されたフィルタを取得
                 if selected_filter == "Satellite Images (*.tif *.tiff)":
                     self.is_satellite_image = True
                 else:
@@ -2242,7 +2257,9 @@ class MainWindow(QtWidgets.QMainWindow):
         images = natsort.os_sorted(images)
         return images
 
+
 from PyQt5 import QtWidgets, QtGui
+
 
 class ChannelSelectionDialog(QtWidgets.QDialog):
     def __init__(self, filename, parent=None):
@@ -2259,7 +2276,7 @@ class ChannelSelectionDialog(QtWidgets.QDialog):
 
     def initUI(self):
         self.setWindowTitle("Select RGB Channels")
-        
+
         layout = QtWidgets.QFormLayout()
 
         # Create combo boxes for R, G, B channel selection
