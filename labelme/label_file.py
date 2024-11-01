@@ -5,6 +5,8 @@ import json
 import os.path as osp
 
 import PIL.Image
+import tifffile
+import numpy as np
 
 from labelme import PY2
 from labelme import QT4
@@ -44,11 +46,23 @@ class LabelFile(object):
 
     @staticmethod
     def load_image_file(filename):
-        try:
-            image_pil = PIL.Image.open(filename)
-        except IOError:
-            logger.error("Failed opening image file: {}".format(filename))
-            return
+        ext = osp.splitext(filename)[1].lower()
+        if ext in [".tif", ".tiff"]:
+            with tifffile.TiffFile(filename) as tif:
+                image_array = tif.asarray()
+            
+            if image_array.ndim == 2:
+                image_array = np.stack((image_array,) * 3, axis=-1)
+            
+            rgb_array = np.clip((image_array / image_array.max()) * 255, 0, 255).astype('uint8')
+            image_pil = PIL.Image.fromarray(rgb_array)
+
+        else:
+            try:
+                image_pil = PIL.Image.open(filename)
+            except IOError:
+                logger.error("Failed opening image file: {}".format(filename))
+                return
 
         # apply orientation to image according to exif
         image_pil = utils.apply_exif_orientation(image_pil)
@@ -59,7 +73,12 @@ class LabelFile(object):
                 format = "PNG"
             elif ext in [".jpg", ".jpeg"]:
                 format = "JPEG"
+            elif ext in [".png"]:
+                format = "PNG"
+            elif ext in [".tiff", ".tif"]:
+                format = "TIFF"
             else:
+                # default format is tiff
                 format = "PNG"
             image_pil.save(f, format=format)
             f.seek(0)
